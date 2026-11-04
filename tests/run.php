@@ -4,7 +4,7 @@
  */
 
 define( 'DIP_SEO_TESTING', true );
-$base = dirname( __DIR__ ) . '/wordpress/wp-content/mu-plugins/dip-seo-fixes';
+$base = dirname( __DIR__ ) . '/wordpress/wp-content/plugins/dip-seo-fixes';
 require $base . '/inc/services.php';
 require $base . '/inc/lib.php';
 

@@ -1,7 +1,7 @@
 # DIP Studio – SEO/AEO fixes for dipstudio.ba
 
 Implementation of the code-level items from the *Technical, Content and AEO/GEO/SEO Audit* of
-https://dipstudio.ba/. The site is WordPress, so the fixes ship as a **must-use plugin** plus
+https://dipstudio.ba/. The site is WordPress, so the fixes ship as a regular **WordPress plugin** plus
 server rules. Content work that needs the owner's real data (prices, specs, address) is listed in
 [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md).
 
@@ -9,12 +9,12 @@ server rules. Content work that needs the owner's real data (prices, specs, addr
 
 | Path | Purpose |
 | --- | --- |
-| `wordpress/wp-content/mu-plugins/dip-seo-fixes.php` + `dip-seo-fixes/` | The mu-plugin |
+| `wordpress/wp-content/plugins/dip-seo-fixes/` | The plugin (`./build.sh` → `dist/dip-seo-fixes.zip`) |
 | `server/apache-root.htaccess` / `server/nginx.conf` | 410 for `/stagging/`, 301 for date-prefixed posts at server level |
 | `tests/run.php` | Tests for the pure helpers (`php tests/run.php`) |
 | `docs/IMPLEMENTATION_STATUS.md` | Every audit item → done here / manual step |
 
-### What the plugin does (automatically, once installed)
+### What the plugin does (automatically, once activated)
 
 - **`/stagging/*` and `/staging/*` → 410 Gone** (audit §1.1 #1).
 - **Rewrites leaked `/stagging/wp-content/…` asset URLs** in page output to `/wp-content/…` (e.g. the logo on `/vjencanja/`). A safety net — run the DB search-replace below as well.
@@ -39,9 +39,9 @@ wp dip-seo gallery-alt --apply      # writes the audit's Bosnian alt text for th
 ## Install
 
 1. **Back up** files + database.
-2. Copy `wordpress/wp-content/mu-plugins/dip-seo-fixes.php` **and** the `dip-seo-fixes/` folder to
-   `wp-content/mu-plugins/` on the server (create the folder if missing). Must-use plugins load
-   automatically; there is nothing to activate.
+2. Run `./build.sh` (or use the zip from the release), then in WordPress go to
+   **Plugins → Add New → Upload Plugin**, upload `dip-seo-fixes.zip` and click **Activate**.
+   Do not upload the whole repository zip — WordPress rejects it ("Nisu pronađeni ispravni plugini").
 3. Fix the staging URLs stored in the database (dry run first):
    ```bash
    wp search-replace 'https://dipstudio.ba/stagging/wp-content/' 'https://dipstudio.ba/wp-content/' --all-tables --dry-run
