@@ -6,7 +6,7 @@
 
 | # | Audit item | Status | How |
 | --- | --- | --- | --- |
-| 1 | Eliminate `/stagging/`, fix cross-environment links | ✅ 🛠 | 410 via plugin + `server/` rules; output URL rewrite; run `wp search-replace` (README step 3) and delete the folder |
+| 1 | Eliminate `/stagging/`, fix cross-environment links | ✅ | Done: live moved to the web root; /stagging/ is now a separate staging install (see re-audit #1 below for deindexing). Output URL rewrite kept as a safety net |
 | 2 | Publish the inaccessible hub pages + `/blog/` | 🛠 | `wp dip-seo create-hubs` (4 hubs + /blog/); `/organizacija-dogadjaja/` 301s to its only service. Until published, hubs 302 to `/usluge/` |
 | 3a | Unify header/footer navigation (Template A vs B) | ✍️ | Theme/menu change: assign the 23-service menu to every template, incl. `/usluge/photobooth/` and single posts |
 | 3b | 301 date-prefixed posts → `/%postname%/` | ✅ | Plugin + `server/` rules; `wp dip-seo check` verifies permalink setting |
@@ -43,3 +43,26 @@ These need facts only DIP Studio has; the audit's numbers are competitor benchma
   diameter/capacity, rental hours, etc.
 - Full street address and working hours (NAP), Google Business Profile verification.
 - Two-sentence direct answers for every FAQ (number first, customisation second).
+
+## Re-audit, November 2026 — 13-step action plan (plugin 1.4.0)
+
+Only findings about dipstudio.ba itself are used. /stagging/ is a separate staging install; the live
+site runs from the web root.
+
+| # | Action | Status | How |
+| --- | --- | --- | --- |
+| 1 | Deindex /stagging/ + "Hello world!" | 🛠 ✍️ | `server/apache-root.htaccess` sends `X-Robots-Tag: noindex, nofollow` for /stagging/ (or password-protect it); Search Console → Removals; delete "Hello world!" in the staging admin. Staging's "Search engine visibility" is already off |
+| 2 | Restore 7 inaccessible URLs | ✅ ✍️ | 302 fallbacks while they 404 (hubs → /usluge/, /paketi/ → /usluge/#cjenovnik, 360 booth → /usluge/photobooth/). ✍️ Publish the pages; if they fail with 5xx instead of 404, check hosting error logs |
+| 3 | 301 date-prefixed blog URLs | ✅ | Plugin + `server/` rule; internal links rewritten (`link_fix`) |
+| 4 | Purge stale menu caches | ✍️ | Purge SpeedyCache + Cloudflare; `wp dip-seo cleanup` if WP-CLI is available |
+| 5 | Stuffed H1 | ✅ ✍️ | Service pages: `h1_split`. ✍️ Homepage: add a keyword subheading under "STVARAMO TRENUTKE" |
+| 6 | Duplicate FAQ / related sections | ✍️ | Delete "Dodatna pitanja prije dogovora" + "Povezane mogućnosti" on hladne-prskalice, niski-dim-za-prvi-ples, photobooth |
+| 7 | KM price block on all service pages | ✅ | `price_block` (from the live /usluge/ table) + 1.3.0 `price_copy` |
+| 8 | Decouple Photobooth / 360 Video Booth | ✍️ | Publish /usluge/360-video-booth/; rewrite the Photobooth H1/intro to cover only Photobooth |
+| 9 | Internal links + compound slugs | ✅ ✍️ | `link_fix`. ✍️ Change the slug of the two compound services in the editor (WordPress then redirects the old URL itself) |
+| 10 | Gallery media library | ✅ 🛠 | 1.3.0 hides duplicates/system/AI images; alt tool now also fixes Media titles. ✍️ H2 headings on /galerija/ |
+| 11 | llms.txt / robots.txt / sitemap | ✅ | robots.txt with AI bots incl. Applebot-Extended; llms.txt with live prices (switch "llms") |
+| 12 | /kontakt/, /o-nama/, hub FAQs, blog | ✅ ✍️ | `kontakt_nap`, `review_block`, BlogPosting schema. ✍️ /o-nama/ H2 sections, FAQs on hub pages |
+| 13 | Google Business Profile, citations, photographer | ✅ ✍️ | `person_schema`. ✍️ GBP, directory listings, embed Ajla's portfolio on the page |
+
+Still needs the owner: street address and working hours (`inc/services.php`), Google Business Profile.

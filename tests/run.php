@@ -4,7 +4,7 @@
  */
 
 define( 'DIP_SEO_TESTING', true );
-$base = dirname( __DIR__ ) . '/wordpress/wp-content/plugins/dip-seo-fixes';
+$base = dirname( __DIR__ ) . '/wordpress/wp-content/plugins/dip-studio-seo';
 require $base . '/inc/services.php';
 require $base . '/inc/lib.php';
 
@@ -93,14 +93,64 @@ echo "Data\n";
 eq( count( dip_seo_services() ), 23, '23 services' );
 eq( count( dip_seo_categories() ), 5, '5 categories' );
 eq( count( dip_seo_cities() ), 36, '36 cities' );
-$llms = file_get_contents( $base . '/llms.txt' );
+
+echo "Price block (1.4.0)\n";
+eq( dip_seo_range_text( '0–2.000 KM' ), 'do 2.000 KM', '0–X shown as do X' );
+eq( dip_seo_range_text( '1.000–5.000 KM' ), '1.000–5.000 KM', 'normal range kept' );
+$block = dip_seo_price_block_html( 'Lepeza iskri (Fan)', '200–300 KM' );
+eq( false !== strpos( $block, '<h2>Cijena usluge: Lepeza iskri 200–300 KM</h2>' ), true, 'heading with name + range' );
+eq( dip_seo_price_block_html( 'X', 'na upit' ), '', 'no block without numbers' );
+eq( dip_seo_has_price_block( $block ), true, 'detects own block' );
+eq( dip_seo_has_price_block( '<h2 class="x">Cijena usluge: <span>Vatropad</span></h2>' ), true, 'detects vatropad-style heading' );
+eq( dip_seo_has_price_block( '<h2>Opis</h2><p>cijena usluge</p>' ), false, 'ignores body text' );
+$page = '<header><h2>Meni</h2></header><main><p>Intro</p><h2>Česta pitanja</h2><p>Q</p></main>';
+eq( dip_seo_insert_price_block( $page, '[B]' ), '<header><h2>Meni</h2></header><main><p>Intro</p>[B]<h2>Česta pitanja</h2><p>Q</p></main>', 'inserted before FAQ inside main' );
+eq( dip_seo_insert_price_block( '<main><p>x</p></main>', '[B]' ), '<main><p>x</p>[B]</main>', 'before </main> without FAQ' );
+eq( dip_seo_insert_price_block( $block, '[B]' ), $block, 'never twice' );
+
+echo "Stuffed H1\n";
+eq(
+	dip_seo_split_stuffed_h1( '<h1 class="t">Photobooth <span class="sub">Zabavni sadržaj i uspomene za goste: foto kutak s rekvizitima</span></h1>', 'Photobooth' ),
+	'<h1 class="t">Photobooth</h1><p class="dip-h1-lead"><span class="sub">Zabavni sadržaj i uspomene za goste: foto kutak s rekvizitima</span></p>',
+	'child element split'
+);
+eq(
+	dip_seo_split_stuffed_h1( '<h1>Hladne prskalice<br>Fontane svjetlucavih iskri za prvi ples</h1>' ),
+	'<h1>Hladne prskalice</h1><p class="dip-h1-lead">Fontane svjetlucavih iskri za prvi ples</p>',
+	'br split'
+);
+eq(
+	dip_seo_split_stuffed_h1( '<h1>Photobooth Zabavni sadržaj i uspomene za goste i još</h1>', 'Photobooth' ),
+	'<h1>Photobooth</h1><p class="dip-h1-lead">Zabavni sadržaj i uspomene za goste i još</p>',
+	'title-prefix split'
+);
+eq( dip_seo_split_stuffed_h1( '<h1>Hladne prskalice</h1>' ), '<h1>Hladne prskalice</h1>', 'short H1 untouched' );
+eq( dip_seo_split_stuffed_h1( '<h1>Jedna duga rečenica bez ikakve strukture u naslovu</h1>', 'Vatropad' ), '<h1>Jedna duga rečenica bez ikakve strukture u naslovu</h1>', 'no split point → untouched' );
+
+echo "Links & anchors\n";
+eq(
+	dip_seo_rewrite_internal_links( '<a href="https://dipstudio.ba/projekti/">a</a><a href="/2026/10/24/photobooth-ili-360/#x">b</a><a href="https://other.ba/projekti/">c</a>' ),
+	'<a href="https://dipstudio.ba/galerija/">a</a><a href="/photobooth-ili-360/#x">b</a><a href="https://other.ba/projekti/">c</a>',
+	'projekti + date-prefixed, other hosts untouched'
+);
+eq( dip_seo_ensure_cjenovnik_anchor( '<h2 class="a">Cjenovnik usluga</h2>' ), '<h2 id="cjenovnik" class="a">Cjenovnik usluga</h2>', 'id added' );
+eq( dip_seo_ensure_cjenovnik_anchor( '<div id="cjenovnik"></div><h2>Cjenovnik</h2>' ), '<div id="cjenovnik"></div><h2>Cjenovnik</h2>', 'existing anchor kept' );
+eq( dip_seo_count_sections( '<h2>Česta pitanja</h2><h2>Dodatna pitanja prije dogovora</h2><h2>Povezane usluge</h2><h2>Povezane mogućnosti</h2>' ), array( 'h2' => 4, 'faq' => 2, 'related' => 2 ), 'duplicate sections counted' );
+
+echo "llms.txt\n";
+$prices = array( 'svjetleci-baldahini' => array( 'Svjetleći baldahini', '1.000–5.000 KM' ), 'organizacija-i-koordinacija' => array( 'Organizacija', '0–2.000 KM' ) );
+$llms   = dip_seo_llms_txt( 'https://dipstudio.ba/', $prices );
 $missing = array();
 foreach ( array_keys( dip_seo_services() ) as $slug ) {
 	if ( false === strpos( $llms, "/usluge/{$slug}/" ) ) {
 		$missing[] = $slug;
 	}
 }
-eq( $missing, array(), 'llms.txt links every service' );
+eq( $missing, array(), 'links every service' );
+eq( false !== strpos( $llms, '(https://dipstudio.ba/usluge/svjetleci-baldahini/) – **1.000–5.000 KM**' ), true, 'live price shown' );
+eq( false !== strpos( $llms, '– **do 2.000 KM**' ), true, '0–X shown as do X' );
+eq( false !== strpos( $llms, '**Upit**' ) && false !== strpos( $llms, '**Dogovor**' ), true, 'booking steps' );
+eq( false === strpos( $llms, 'atrakcij' ), true, 'no "atrakcije" (client request)' );
 
 echo "\n" . ( $count - $fails ) . "/{$count} passed\n";
 exit( $fails ? 1 : 0 );

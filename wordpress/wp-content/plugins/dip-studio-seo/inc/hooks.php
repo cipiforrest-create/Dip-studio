@@ -22,18 +22,15 @@ function dip_seo_request_path(): string {
 add_action(
 	'init',
 	static function () {
-		if ( '/llms.txt' !== dip_seo_request_path() ) {
-			return;
-		}
-		$file = DIP_SEO_DIR . '/llms.txt';
-		if ( ! is_readable( $file ) ) {
+		if ( ! dip_studio_seo_setting( 'llms' ) || '/llms.txt' !== dip_seo_request_path() ) {
 			return;
 		}
 		status_header( 200 );
 		header( 'Content-Type: text/markdown; charset=utf-8' );
 		header( 'X-Robots-Tag: noindex' ); // Keep it out of the web index; AI fetchers still read it.
 		header( 'Cache-Control: public, max-age=3600' );
-		readfile( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		// 1.4.0: generated from inc/services.php + the live /usluge/ price table (no static file).
+		echo dip_seo_llms_txt( home_url( '/' ), dip_seo_price_map() ); // phpcs:ignore WordPress.Security.EscapeOutput -- text/markdown.
 		exit;
 	},
 	0
@@ -49,8 +46,8 @@ add_action(
 add_filter(
 	'robots_txt',
 	static function ( $output, $public ) {
-		if ( ! $public ) {
-			return $output; // "Discourage search engines" is on — respect it.
+		if ( ! $public || ! dip_studio_seo_setting( 'robots' ) ) {
+			return $output; // "Discourage search engines" is on, or the setting is off.
 		}
 		$lines = array(
 			'User-agent: *',
@@ -80,7 +77,13 @@ add_filter(
 			'User-agent: Google-Extended',
 			'Allow: /',
 			'',
-			'Sitemap: ' . home_url( '/sitemap_index.xml' ),
+			'User-agent: Applebot',
+			'Allow: /',
+			'',
+			'User-agent: Applebot-Extended',
+			'Allow: /',
+			'',
+			'Sitemap: ' . home_url( '/sitemaps.xml' ), // SiteSEO's sitemap index.
 			'',
 		);
 		return apply_filters( 'dip_seo_robots_txt', implode( "\n", $lines ) );
@@ -108,6 +111,9 @@ function dip_seo_404_fallbacks(): array {
 		'/rasvjeta'               => array( '/usluge/', 302 ),
 		'/vatrometi'              => array( '/usluge/', 302 ),
 		'/photo-fun'              => array( '/usluge/', 302 ),
+		// 1.4.0 (re-audit 7 Nov): also inaccessible. Temporary until the pages are (re)published.
+		'/paketi'                 => array( '/usluge/#cjenovnik', 302 ),
+		'/usluge/360-video-booth' => array( '/usluge/photobooth/', 302 ),
 	);
 	return apply_filters( 'dip_seo_404_fallbacks', $map );
 }
@@ -117,17 +123,21 @@ add_action(
 	static function () {
 		$path = dip_seo_request_path();
 
-		// 1. Staging install removed → 410 Gone so search engines drop the URLs.
-		if ( dip_seo_is_staging_path( $path ) ) {
+		// 1. Old /stagging/ front-end URLs → 410 Gone so search engines drop them.
+		//    Only WordPress-routed URLs reach this hook; files, wp-admin, wp-login and REST are untouched.
+		if ( dip_studio_seo_setting( 'staging_410' ) && dip_seo_is_staging_path( $path ) ) {
 			status_header( 410 );
 			nocache_headers();
-			header( 'X-Robots-Tag: noindex' );
+			header( 'X-Robots-Tag: noindex, nofollow' );
 			header( 'Content-Type: text/plain; charset=utf-8' );
 			echo '410 Gone';
 			exit;
 		}
 
 		// 2. Date-prefixed duplicate of a post → 301 to the canonical /%postname%/ URL.
+		if ( ! dip_studio_seo_setting( 'redirects' ) ) {
+			return;
+		}
 		$slug = dip_seo_date_prefixed_slug( $path );
 		if ( null !== $slug ) {
 			$post = is_singular( 'post' ) ? get_queried_object() : get_page_by_path( $slug, OBJECT, 'post' );
@@ -167,17 +177,24 @@ add_action(
 add_action(
 	'template_redirect',
 	static function () {
-		if ( is_admin() || wp_doing_ajax() || is_customize_preview() ) {
+		if ( is_admin() || wp_doing_ajax() || is_customize_preview() || is_feed() ) {
+			return;
+		}
+		$rewrite = dip_studio_seo_setting( 'rewrite_urls' );
+		$heading = dip_studio_seo_setting( 'heading_fix' );
+		if ( ! $rewrite && ! $heading ) {
 			return;
 		}
 		$host = (string) wp_parse_url( home_url(), PHP_URL_HOST );
 		ob_start(
-			static function ( $html ) use ( $host ) {
+			static function ( $html ) use ( $host, $rewrite, $heading ) {
 				if ( ! is_string( $html ) || '' === $html ) {
 					return $html;
 				}
-				$html = dip_seo_rewrite_staging_urls( $html, $host );
-				return dip_seo_fix_heading_breaks( $html );
+				if ( $rewrite ) {
+					$html = dip_seo_rewrite_staging_urls( $html, $host );
+				}
+				return $heading ? dip_seo_fix_heading_breaks( $html ) : $html;
 			}
 		);
 	},
@@ -193,7 +210,7 @@ add_action(
 add_filter(
 	'get_the_excerpt',
 	static function ( $excerpt, $post = null ) {
-		if ( is_admin() || ! is_singular( 'post' ) || ! did_action( 'wp_head' ) || doing_action( 'wp_head' ) ) {
+		if ( ! dip_studio_seo_setting( 'dup_excerpt' ) || is_admin() || ! is_singular( 'post' ) || ! did_action( 'wp_head' ) || doing_action( 'wp_head' ) ) {
 			return $excerpt;
 		}
 		$post = get_post( $post );

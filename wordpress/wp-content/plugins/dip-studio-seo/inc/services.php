@@ -55,11 +55,11 @@ function dip_seo_categories(): array {
 			),
 		),
 		'photo-fun'              => array(
-			'name'     => 'Photo & Fun atrakcije',
+			'name'     => 'Photo & Fun',
 			'title'    => 'Photobooth, 360 Video Booth i Audio Guestbook Sarajevo',
 			'h1'       => 'Photobooth, 360 Video Booth i interaktivne uspomene za goste',
 			'desc'     => 'Najam Photobootha, 360 Video Bootha i Audio Guestbooka, svečana zdravica i profesionalni fotograf za vjenčanja i događaje u Sarajevu i BiH.',
-			'intro'    => 'Photo & Fun atrakcije zabavljaju goste i ostavljaju uspomene koje mladenci i organizatori dobijaju nakon događaja: odštampane fotografije, kratke 360 video snimke, glasovne čestitke i profesionalne fotografije.',
+			'intro'    => 'Photo & Fun usluge zabavljaju goste i ostavljaju uspomene koje mladenci i organizatori dobijaju nakon događaja: odštampane fotografije, kratke 360 video snimke, glasovne čestitke i profesionalne fotografije.',
 			'services' => array(
 				'photobooth'              => array( 'Najam Photobootha', 'Klasični foto kutak s pozadinom, rekvizitima i personalizovanim okvirom fotografije.' ),
 				'360-video-booth'         => array( 'Najam 360 Video Bootha', 'Platforma s rotirajućom kamerom koja snima kratke dinamične video snimke gostiju u pokretu.' ),
@@ -117,8 +117,16 @@ function dip_seo_business(): array {
 		'region'     => 'Kanton Sarajevo',
 		'postal'     => '71000',
 		'country'    => 'BA',
-		'street'     => '', // TODO(owner): fill in to complete NAP — see docs/IMPLEMENTATION_STATUS.md.
+		'street'     => '',
+		// TODO(owner): working hours, e.g. array( array( 'Mo-Fr', '09:00', '17:00' ) ). Empty = not shown anywhere.
+		'hours'      => array(),
+		'wa'         => 'https://wa.me/387603080020', // TODO(owner): fill in to complete NAP — see docs/IMPLEMENTATION_STATUS.md.
 		'logo'       => 'https://dipstudio.ba/wp-content/uploads/2026/10/dip-logo-white-optimized.webp',
 		'same_as'    => array( 'https://www.instagram.com/dipstudio.ba/' ),
+		'photographer' => array(
+			'name'    => 'Ajla Husagić',
+			'job'     => 'Profesionalni fotograf',
+			'same_as' => array( 'https://ajla-weddings.vercel.app/' ),
+		),
 	);
 }

@@ -1,6 +1,6 @@
 <?php
 /**
- * WP-CLI commands: `wp dip-seo check|create-hubs|gallery-alt`.
+ * WP-CLI commands: `wp dip-seo check|audit-pages|cleanup|create-hubs|gallery-alt`.
  */
 
 defined( 'ABSPATH' ) || exit;
@@ -185,6 +185,87 @@ class DIP_SEO_CLI {
 		if ( ! $apply ) {
 			WP_CLI::log( 'Dry run. Re-run with --apply to write the audit\'s replacements.' );
 		}
+	}
+
+	/**
+	 * Fetches the live pages named in the audits and reports status, H1 length, H2 count, duplicated
+	 * FAQ/related sections, missing price blocks and leftover "na upit" (1.4.0).
+	 *
+	 * ## OPTIONS
+	 *
+	 * [--format=<format>]
+	 * : table, csv or json. Default: table.
+	 *
+	 * ## EXAMPLES
+	 *     wp dip-seo audit-pages
+	 */
+	public function audit_pages( $args, $assoc ) {
+		$paths = array( '/', '/usluge/', '/vjencanja/', '/korporativni-dogadjaji/', '/proslave/', '/galerija/', '/o-nama/', '/kontakt/', '/blog/', '/paketi/', '/konfigurator/', '/kako-rezervisati/', '/llms.txt', '/robots.txt', '/stagging/', '/organizacija-dogadjaja/', '/projekti/' );
+		foreach ( dip_seo_categories() as $slug => $cat ) {
+			if ( ! isset( $cat['hub'] ) || $cat['hub'] ) {
+				$paths[] = "/{$slug}/";
+			}
+		}
+		foreach ( array_keys( dip_seo_price_map() ) as $slug ) {
+			$paths[] = "/usluge/{$slug}/";
+		}
+		$rows = array();
+		foreach ( array_unique( $paths ) as $path ) {
+			$res    = wp_remote_get( home_url( $path ), array( 'redirection' => 0, 'timeout' => 20 ) );
+			$code   = is_wp_error( $res ) ? 'ERR' : (string) wp_remote_retrieve_response_code( $res );
+			$loc    = is_wp_error( $res ) ? $res->get_error_message() : (string) wp_remote_retrieve_header( $res, 'location' );
+			$html   = is_wp_error( $res ) ? '' : (string) wp_remote_retrieve_body( $res );
+			$issues = array();
+			if ( '200' === $code && false !== stripos( $html, '<html' ) ) {
+				preg_match_all( '#<h1\b[^>]*>(.*?)</h1>#is', $html, $h1 );
+				$words = isset( $h1[1][0] ) ? count( preg_split( '/\s+/u', dip_seo_plain( $h1[1][0] ), -1, PREG_SPLIT_NO_EMPTY ) ) : 0;
+				$sec   = dip_seo_count_sections( $html );
+				if ( 1 !== count( $h1[1] ) ) {
+					$issues[] = count( $h1[1] ) . ' H1';
+				}
+				if ( $words > 8 ) {
+					$issues[] = "H1 {$words} words";
+				}
+				if ( 0 === $sec['h2'] ) {
+					$issues[] = 'no H2';
+				}
+				if ( $sec['faq'] > 1 ) {
+					$issues[] = "{$sec['faq']} FAQ sections";
+				}
+				if ( $sec['related'] > 1 ) {
+					$issues[] = "{$sec['related']} related sections";
+				}
+				if ( preg_match( '/na\s+upit/iu', dip_seo_plain( $html ) ) ) {
+					$issues[] = '"na upit"';
+				}
+				if ( 0 === strpos( $path, '/usluge/' ) && '/usluge/' !== $path && ! dip_seo_has_price_block( $html ) ) {
+					$issues[] = 'no price block';
+				}
+				if ( 0 === $sec['faq'] && in_array( $path, array( '/usluge/', '/vjencanja/', '/korporativni-dogadjaji/', '/proslave/', '/kako-rezervisati/' ), true ) ) {
+					$issues[] = 'no FAQ section';
+				}
+			}
+			$rows[] = array( 'path' => $path, 'status' => $code, 'location' => $loc, 'issues' => implode( '; ', $issues ) );
+		}
+		\WP_CLI\Utils\format_items( $assoc['format'] ?? 'table', $rows, array( 'path', 'status', 'location', 'issues' ) );
+	}
+
+	/**
+	 * Trashes a published default "Hello world!" post and flushes object/page caches so every template
+	 * shows the current menu (1.4.0).
+	 *
+	 * ## EXAMPLES
+	 *     wp dip-seo cleanup
+	 */
+	public function cleanup() {
+		foreach ( get_posts( array( 'name' => 'hello-world', 'post_type' => 'post', 'post_status' => 'any', 'numberposts' => 5 ) ) as $p ) {
+			wp_trash_post( $p->ID );
+			WP_CLI::success( "Trashed \"{$p->post_title}\" (ID {$p->ID})." );
+		}
+		wp_cache_flush();
+		do_action( 'speedycache_purge_all' ); // SpeedyCache; no-op if absent.
+		flush_rewrite_rules( false );
+		WP_CLI::success( 'Object cache and rewrite rules flushed. Also purge SpeedyCache (Settings) and Cloudflare.' );
 	}
 
 	/* ------------------------------------------------------------------------------------- */
