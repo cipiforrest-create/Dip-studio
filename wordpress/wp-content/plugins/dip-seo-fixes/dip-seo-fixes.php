@@ -1,8 +1,8 @@
 <?php
 /**
  * Plugin Name: DIP Studio – SEO/AEO fixes
- * Description: Implements the code-level fixes from the dipstudio.ba Technical SEO/AEO audit: staging 410 + URL rewrite, date-permalink 301s, heading tokenization fix, duplicate lead sentence, robots.txt, llms.txt, JSON-LD @graph and WP-CLI tools (wp dip-seo …).
- * Version: 1.0.1
+ * Description: Implements the code-level fixes from the dipstudio.ba Technical SEO/AEO audit: staging 410 + URL rewrite, date-permalink 301s, heading tokenization fix, duplicate lead sentence, robots.txt, llms.txt with KM prices, JSON-LD @graph (prices, Person, BlogPosting), service-page price blocks and H1 cleanup, /kontakt/ NAP block, blog reviewer block and WP-CLI tools (wp dip-seo …). Updated for the November 2026 re-audit.
+ * Version: 1.1.0
  * Requires PHP: 7.4
  * Text Domain: dip-seo-fixes
  */

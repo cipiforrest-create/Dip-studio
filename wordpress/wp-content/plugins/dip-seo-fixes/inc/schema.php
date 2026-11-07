@@ -2,15 +2,16 @@
 /**
  * JSON-LD @graph (audit §5.2 A–C).
  *
- *  - Sitewide: EntertainmentBusiness/LocalBusiness + OfferCatalog (23 services) + WebSite.
- *  - /usluge/{slug}/: Service node linked to the organization.
+ *  - Sitewide: EntertainmentBusiness/LocalBusiness + OfferCatalog (23 services, KM price ranges) + WebSite.
+ *  - /usluge/{slug}/: Service node with AggregateOffer (BAM) matching the visible price block.
+ *  - Person (Ajla Husagić, photographer) referenced as the organization's employee.
+ *  - Blog posts: BlogPosting with datePublished/dateModified, author + publisher.
  *  - /konfigurator/: WebApplication.
  *
  * Deliberately NOT emitted here:
  *  - BreadcrumbList — SiteSEO Pro generates it (audit §5.1); emitting it twice causes conflicts.
  *  - FAQPage — FAQ markup must mirror visible on-page answers. Add it per page only after the
  *    FAQ copy has been rewritten with verified figures (audit §3.3).
- *  - Prices — no verified "od X KM" anchors exist yet; add `offers.lowPrice` once published.
  *
  * Disable with `define( 'DIP_SEO_DISABLE_SCHEMA', true );` or filter `dip_seo_schema_graph`.
  * If SiteSEO's own Knowledge Graph "Organization" is enabled, turn it off to avoid two
@@ -23,21 +24,49 @@ function dip_seo_org_id(): string {
 	return home_url( '/#organization' );
 }
 
+/** AggregateOffer in BAM for a service, from the published /usluge/ price table. */
+function dip_seo_schema_offer( string $slug ): ?array {
+	$svc = dip_seo_services()[ $slug ] ?? null;
+	if ( ! $svc || null === $svc[4] ) {
+		return null;
+	}
+	return array_filter(
+		array(
+			'@type'         => 'AggregateOffer',
+			'priceCurrency' => 'BAM',
+			'lowPrice'      => null === $svc[3] ? null : (string) $svc[3],
+			'highPrice'     => (string) $svc[4],
+			'url'           => home_url( "/usluge/{$slug}/" ),
+		),
+		static function ( $v ) {
+			return null !== $v;
+		}
+	);
+}
+
 function dip_seo_schema_organization(): array {
 	$b       = dip_seo_business();
 	$catalog = array();
 	foreach ( dip_seo_categories() as $cat ) {
 		$items = array();
 		foreach ( $cat['services'] as $slug => $svc ) {
-			$items[] = array(
-				'@type'       => 'Offer',
+			$offer   = dip_seo_schema_offer( $slug );
+			$items[] = array_filter( array(
+				'@type'         => 'Offer',
+				'priceCurrency' => $offer ? 'BAM' : null,
+				'priceSpecification' => $offer ? array_filter( array(
+					'@type'         => 'PriceSpecification',
+					'priceCurrency' => 'BAM',
+					'minPrice'      => $offer['lowPrice'] ?? null,
+					'maxPrice'      => $offer['highPrice'],
+				) ) : null,
 				'itemOffered' => array(
 					'@type' => 'Service',
 					'@id'   => home_url( "/usluge/{$slug}/#service" ),
 					'name'  => $svc[0],
 					'url'   => home_url( "/usluge/{$slug}/" ),
 				),
-			);
+			) );
 		}
 		$catalog[] = array(
 			'@type'           => 'OfferCatalog',
@@ -65,7 +94,7 @@ function dip_seo_schema_organization(): array {
 		)
 	);
 
-	return array(
+	return array_filter( array(
 		'@type'              => array( 'EntertainmentBusiness', 'LocalBusiness' ),
 		'@id'                => dip_seo_org_id(),
 		'name'               => $b['name'],
@@ -83,7 +112,7 @@ function dip_seo_schema_organization(): array {
 		'description'        => 'DIP Studio pruža specijalne efekte za prvi ples (niski dim, hladne prskalice, balonska eksplozija), scensku i ambijentalnu rasvjetu (zvjezdano nebo, svjetleći baldahini), dnevne i noćne vatromete, te najam Photobootha, 360 Video Bootha i Audio Guestbooka za vjenčanja, proslave i korporativne događaje u Sarajevu i cijeloj Bosni i Hercegovini.',
 		'telephone'          => $b['telephone'],
 		'email'              => $b['email'],
-		'priceRange'         => '$$',
+		'priceRange'         => '50 KM – 5.000 KM',
 		'currenciesAccepted' => 'BAM, EUR',
 		'address'            => $address,
 		'contactPoint'       => array(
@@ -97,14 +126,8 @@ function dip_seo_schema_organization(): array {
 			),
 		),
 		'sameAs'             => $b['same_as'],
-		'employee'           => array(
-			'@type'    => 'Person',
-			'@id'      => home_url( '/usluge/profesionalni-fotograf/#ajla-husagic' ),
-			'name'     => 'Ajla Husagić',
-			'jobTitle' => 'Profesionalni fotograf za vjenčanja i događaje',
-			'url'      => home_url( '/usluge/profesionalni-fotograf/' ),
-			'worksFor' => array( '@id' => dip_seo_org_id() ),
-		),
+		'openingHoursSpecification' => dip_seo_schema_hours(),
+		'employee'           => array( '@id' => dip_seo_person_id() ),
 		'areaServed'         => $area,
 		'hasOfferCatalog'    => array(
 			'@type'           => 'OfferCatalog',
@@ -125,11 +148,53 @@ function dip_seo_schema_organization(): array {
 				'name'  => 'Provjera dostupnosti termina putem DIP Studio konfiguratora',
 			),
 		),
+	) );
+}
+
+function dip_seo_person_id(): string {
+	return home_url( '/usluge/profesionalni-fotograf/#ajla-husagic' );
+}
+
+/** Ajla Husagić (re-audit §5). */
+function dip_seo_schema_person(): array {
+	$p = dip_seo_business()['photographer'];
+	return array(
+		'@type'    => 'Person',
+		'@id'      => dip_seo_person_id(),
+		'name'     => $p['name'],
+		'jobTitle' => $p['job'],
+		'url'      => home_url( '/usluge/profesionalni-fotograf/' ),
+		'sameAs'   => $p['same_as'],
+		'worksFor' => array( '@id' => dip_seo_org_id() ),
 	);
 }
 
+/** openingHoursSpecification from dip_seo_business()['hours'] (empty until the owner sets hours). */
+function dip_seo_schema_hours(): array {
+	$days = array( 'Mo' => 'Monday', 'Tu' => 'Tuesday', 'We' => 'Wednesday', 'Th' => 'Thursday', 'Fr' => 'Friday', 'Sa' => 'Saturday', 'Su' => 'Sunday' );
+	$keys = array_keys( $days );
+	$out  = array();
+	foreach ( dip_seo_business()['hours'] as $h ) {
+		$range = explode( '-', $h[0] );
+		$from  = array_search( $range[0], $keys, true );
+		$to    = array_search( $range[1] ?? $range[0], $keys, true );
+		if ( false === $from || false === $to ) {
+			continue;
+		}
+		$out[] = array(
+			'@type'     => 'OpeningHoursSpecification',
+			'dayOfWeek' => array_map( static function ( $k ) use ( $days ) {
+				return $days[ $k ];
+			}, array_slice( $keys, $from, $to - $from + 1 ) ),
+			'opens'     => $h[1],
+			'closes'    => $h[2],
+		);
+	}
+	return $out;
+}
+
 function dip_seo_schema_graph( string $path ): array {
-	$graph   = array( dip_seo_schema_organization() );
+	$graph   = array( dip_seo_schema_organization(), dip_seo_schema_person() );
 	$graph[] = array(
 		'@type'      => 'WebSite',
 		'@id'        => home_url( '/#website' ),
@@ -143,6 +208,7 @@ function dip_seo_schema_graph( string $path ): array {
 
 	if ( preg_match( '#^usluge/([^/]+)$#', $path, $m ) ) {
 		$services = dip_seo_services();
+		$m[1]     = dip_seo_legacy_slugs()[ $m[1] ] ?? $m[1];
 		if ( isset( $services[ $m[1] ] ) ) {
 			list( $name, $desc, $cat_slug ) = $services[ $m[1] ];
 			$related                         = array();
@@ -166,9 +232,33 @@ function dip_seo_schema_graph( string $path ): array {
 						'audienceType' => 'Mladenci, organizatori vjenčanja, privatnih proslava i korporativnih događaja',
 					),
 					'isRelatedTo' => $related,
+					'offers'      => dip_seo_schema_offer( $m[1] ),
 				)
 			);
 		}
+	}
+
+	if ( function_exists( 'is_singular' ) && is_singular( 'post' ) && apply_filters( 'dip_seo_blogposting_schema', true ) ) {
+		$post  = get_queried_object();
+		$url   = get_permalink( $post );
+		$image = get_the_post_thumbnail_url( $post, 'full' );
+		$graph[] = array_filter(
+			array(
+				'@type'            => 'BlogPosting',
+				'@id'              => $url . '#article',
+				'headline'         => wp_strip_all_tags( get_the_title( $post ) ),
+				'description'      => wp_strip_all_tags( get_the_excerpt( $post ) ),
+				'url'              => $url,
+				'mainEntityOfPage' => $url,
+				'image'            => $image ?: null,
+				'inLanguage'       => 'bs-BA',
+				'datePublished'    => get_the_date( 'c', $post ),
+				'dateModified'     => get_the_modified_date( 'c', $post ),
+				'author'           => array( '@id' => dip_seo_org_id() ),
+				'publisher'        => array( '@id' => dip_seo_org_id() ),
+				'isPartOf'         => array( '@id' => home_url( '/#website' ) ),
+			)
+		);
 	}
 
 	if ( 'konfigurator' === $path ) {

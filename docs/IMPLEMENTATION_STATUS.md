@@ -43,3 +43,26 @@ These need facts only DIP Studio has; the audit's numbers are competitor benchma
   diameter/capacity, rental hours, etc.
 - Full street address and working hours (NAP), Google Business Profile verification.
 - Two-sentence direct answers for every FAQ (number first, customisation second).
+
+## Re-audit, November 2026 — 13-step action plan
+
+Only findings about dipstudio.ba itself are implemented; third-party benchmark sites in the report
+are not used as data.
+
+| # | Action | Status | How |
+| --- | --- | --- | --- |
+| 1 | Deindex/remove `/stagging/` + "Hello world!" | ✅ 🛠 | 410 + `X-Robots-Tag: noindex, nofollow` (plugin + `server/`); not disallowed in robots.txt so Google sees the 410. ✍️ Delete the folder (removes its own "Hello world!" post), request URL-prefix removal in Search Console. `wp dip-seo cleanup` trashes a "Hello world!" in the production DB |
+| 2 | Restore 7 inaccessible URLs | ✅ 🛠 | 404 fallbacks for all 7 (`/paketi/` → `/usluge/#cjenovnik`, `/usluge/360-video-booth/` → `/usluge/photobooth/`, hubs → `/usluge/`); `create-hubs`, `create-service-pages` for real pages. ✍️ If they fail with 5xx/connection errors rather than 404, that's hosting — check server error logs |
+| 3 | 301 date-prefixed blog URLs | ✅ | Already in v1.0 (plugin + `server/`); internal links to them are now rewritten too |
+| 4 | Purge stale template/menu caches | 🛠 | `wp dip-seo cleanup` (object cache, WP Rocket, W3TC, Super Cache, LiteSpeed, Autoptimize, SiteGround). ✍️ Purge CDN; make sure single posts use the same menu location |
+| 5 | Stuffed `<h1>` | ✅ ✍️ | `/usluge/*`: H1 split into name + `<p class="dip-h1-lead">` at render time. ✍️ Homepage: add a keyword subheading under "STVARAMO TRENUTKE" in the page builder, e.g. *Specijalni efekti, rasvjeta i atrakcije za vjenčanja i događaje u Sarajevu i BiH* |
+| 6 | Merge duplicate FAQ / related sections | ✍️ 🛠 | `/usluge/hladne-prskalice/`, `/usluge/niski-dim-za-prvi-ples/`, `/usluge/photobooth/`: delete the legacy "Dodatna pitanja prije dogovora" and "Povezane mogućnosti" blocks in the editor. `audit-pages` flags any page with >1 |
+| 7 | KM price block on all service pages | ✅ | Price block + "Cijene na upit" replacement from the published /usluge/ price table |
+| 8 | Decouple Photobooth / 360 Video Booth | 🛠 ✍️ | `create-service-pages` drafts `/usluge/360-video-booth/` (200–500 KM); ✍️ rewrite `/usluge/photobooth/` H1/intro/"Šta dobijate" to cover only the photobooth |
+| 9 | Internal links + compound slugs | ✅ 🛠 | `/projekti/` links rewritten to `/galerija/`; `#cjenovnik` id ensured; `rename-legacy-slugs --apply` + automatic 301s |
+| 10 | Gallery media library | 🛠 ✍️ | `gallery-alt --apply` fixes alt + title + caption + description (prompts, 29 slug titles, 2 hash titles); `--brand-suffix` for alts #32, #34–#60. ✍️ Remove "Website Header Preview" and "Apple Touch Icon" from the gallery; add H2 category headings on `/galerija/` |
+| 11 | llms.txt, robots.txt, sitemap | ✅ | llms.txt with 23 KM prices/36 cities/booking steps; Applebot(-Extended) added; date-prefixed URLs aren't in WP sitemaps with `/%postname%/`. ✍️ Remove the 7 URLs from any manually curated sitemap until they return 200 |
+| 12 | `/kontakt/`, `/o-nama/`, hub FAQs, blog | ✅ ✍️ | `/kontakt/` NAP + booking H2 block; reviewer block + dates on every post; BlogPosting schema. ✍️ `/o-nama/` H2 sections; FAQ blocks on `/usluge/`, `/vjencanja/`, `/korporativni-dogadjaji/`, `/proslave/`, `/kako-rezervisati/`; `/blog/` post titles as `<h2>` (theme template) |
+| 13 | Google Business Profile, citations, photographer portfolio | ✍️ | Off-site. Person schema for Ajla Husagić added (sameAs her portfolio); ✍️ embed a portfolio gallery on `/usluge/profesionalni-fotograf/` |
+
+Still needs the owner: street address and working hours (`inc/services.php`), GBP verification.

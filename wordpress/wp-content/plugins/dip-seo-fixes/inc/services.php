@@ -1,7 +1,10 @@
 <?php
 /**
  * Single source of truth for DIP Studio's 5 categories / 23 services and service area.
- * Used by the JSON-LD schema, hub page generator and llms.txt.
+ * Used by the JSON-LD schema, hub/service page generators, price blocks and llms.txt.
+ *
+ * Service row: [ name, description, price_low_km|null, price_high_km, unit? ].
+ * Prices are the ranges DIP Studio publishes in "Cjenovnik usluga" on /usluge/ (re-audit Nov 2026).
  *
  * No WordPress functions are called in this file (it is loaded by the test runner too).
  */
@@ -17,16 +20,16 @@ function dip_seo_categories(): array {
 			'desc'     => 'Niski dim, hladne prskalice, vatropad, balonska eksplozija, magični laser i CO2 party gun za vjenčanja i proslave u Sarajevu i cijeloj BiH.',
 			'intro'    => 'Specijalni efekti pretvaraju ključne trenutke večeri – svečani ulazak, prvi ples, rezanje torte i vrhunac zabave – u prizore koji ostaju na fotografijama i snimku. Na ovoj stranici su sve vrste efekata koje DIP Studio postavlja u salama i na otvorenom širom Bosne i Hercegovine.',
 			'services' => array(
-				'niski-dim-za-prvi-ples'       => array( 'Niski dim za prvi ples (Ples na oblacima)', 'Gust bijeli sloj magle uz sam pod za prvi ples, svečani ulazak i plesne trenutke bez zaklanjanja lica mladenaca.' ),
-				'hladne-prskalice'             => array( 'Hladne prskalice (Scenske fontane)', 'Fontane svjetlucavih iskri oko plesnog podija ili staze za prvi ples, ulazak mladenaca i rezanje torte.' ),
-				'rotirajuce-prskalice-vatropad' => array( 'Rotirajuće prskalice', 'Krugovi svjetlucavih iskri u pokretu oko mladenaca za ključne trenutke večeri.' ),
-				'vatropad'                     => array( 'Vatropad (Zavjesa od iskri)', 'Svjetlucava zavjesa iskri koja se spušta odozgo poput kiše.' ),
-				'vatrena-vjetrenjaca-lepeza'   => array( 'Vatrena vjetrenjača', 'Rotirajući točak od iskri za upečatljiv vizuelni okvir.' ),
-				'lepeza'                       => array( 'Lepeza iskri', 'Široki lepezasti svjetlosni efekat iskri za svečani ulazak, prvi ples ili završnicu programa.' ),
-				'balonska-eksplozija'          => array( 'Balonska eksplozija', 'Kontrolisano iznenađenje iz balona za prvi ples i svečani ulazak.' ),
-				'baloncici'                    => array( 'Balončići za prvi ples i tortu', 'Sitni mjehurići u prostoru za prvi ples, rezanje torte i svečani izlazak.' ),
-				'magicni-laser'                => array( 'Magični laser', 'Scenski snopovi svjetla u ritmu muzike za plesni podij.' ),
-				'co2-party-gun'                => array( 'CO2 Party Gun', 'Kratak, naglašen bijeli mlaz za vrhunac zabave i plesa.' ),
+				'niski-dim-za-prvi-ples'       => array( 'Niski dim za prvi ples (Ples na oblacima)', 'Gust bijeli sloj magle uz sam pod za prvi ples, svečani ulazak i plesne trenutke bez zaklanjanja lica mladenaca.', 200, 300 ),
+				'hladne-prskalice'             => array( 'Hladne prskalice (Scenske fontane)', 'Fontane svjetlucavih iskri oko plesnog podija ili staze za prvi ples, ulazak mladenaca i rezanje torte.', 50, 100, 'par' ),
+				'rotirajuce-prskalice'         => array( 'Rotirajuće prskalice', 'Krugovi svjetlucavih iskri u pokretu oko mladenaca za ključne trenutke večeri.', 200, 400 ),
+				'vatropad'                     => array( 'Vatropad (Zavjesa od iskri)', 'Svjetlucava zavjesa iskri koja se spušta odozgo poput kiše.', 300, 500 ),
+				'vatrena-vjetrenjaca'          => array( 'Vatrena vjetrenjača', 'Rotirajući točak od iskri za upečatljiv vizuelni okvir.', 300, 500 ),
+				'lepeza'                       => array( 'Lepeza iskri', 'Široki lepezasti svjetlosni efekat iskri za svečani ulazak, prvi ples ili završnicu programa.', 200, 300 ),
+				'balonska-eksplozija'          => array( 'Balonska eksplozija', 'Kontrolisano iznenađenje iz balona za prvi ples i svečani ulazak.', 300, 600 ),
+				'baloncici'                    => array( 'Balončići za prvi ples i tortu', 'Sitni mjehurići u prostoru za prvi ples, rezanje torte i svečani izlazak.', 200, 300 ),
+				'magicni-laser'                => array( 'Magični laser', 'Scenski snopovi svjetla u ritmu muzike za plesni podij.', 500, 700 ),
+				'co2-party-gun'                => array( 'CO2 Party Gun', 'Kratak, naglašen bijeli mlaz za vrhunac zabave i plesa.', 200, 400 ),
 			),
 		),
 		'rasvjeta'               => array(
@@ -36,9 +39,9 @@ function dip_seo_categories(): array {
 			'desc'     => 'Ambijentalna rasvjeta i bojenje prostora, zvjezdano nebo i svjetleći baldahini za svečane sale, terase i mladenački sto u Sarajevu i BiH.',
 			'intro'    => 'Rasvjeta određuje atmosferu cijele večeri. DIP Studio boji zidove i stubove sale, postavlja zvjezdano nebo iznad plesnog podija ili mladenačkog stola i osvjetljava dekorativne baldahine, u zatvorenim salama i na otvorenim terasama.',
 			'services' => array(
-				'ambijentalna-rasvjeta' => array( 'Ambijentalna rasvjeta i bojenje prostora', 'Dekorativno bojenje prostora i svjetlost koja povezuje zone svečane sale ili terase.' ),
-				'zvjezdano-nebo'        => array( 'Zvjezdano nebo', 'Dekorativni stropni sloj toplih lampica iznad plesnog podija ili mladenačkog stola.' ),
-				'svjetleci-baldahini'   => array( 'Svjetleći baldahini', 'Osvijetljeni dekorativni baldahini za mladenački sto i svečane prostore.' ),
+				'ambijentalna-rasvjeta' => array( 'Ambijentalna rasvjeta i bojenje prostora', 'Dekorativno bojenje prostora i svjetlost koja povezuje zone svečane sale ili terase.', 300, 900 ),
+				'zvjezdano-nebo'        => array( 'Zvjezdano nebo', 'Dekorativni stropni sloj toplih lampica iznad plesnog podija ili mladenačkog stola.', 500, 3000 ),
+				'svjetleci-baldahini'   => array( 'Svjetleći baldahini', 'Osvijetljeni dekorativni baldahini za mladenački sto i svečane prostore.', 1000, 5000 ),
 			),
 		),
 		'vatrometi'              => array(
@@ -48,10 +51,10 @@ function dip_seo_categories(): array {
 			'desc'     => 'Dnevni vatromet u boji, noćni profesionalni vatromet, niski vatromet i rimske svijeće za vjenčanja i proslave na otvorenom širom BiH.',
 			'intro'    => 'Vatromet je najglasniji i najvidljiviji trenutak proslave. Dnevni vatromet u boji namijenjen je ceremonijama i fotografisanju na otvorenom, dok su noćni, niski vatromet i rimske svijeće vrhunac večernjeg programa.',
 			'services' => array(
-				'vatromet-u-boji'      => array( 'Dnevni vatromet u boji', 'Dnevne dimne fontane u boji za ceremonije na otvorenom i fotografisanje.' ),
-				'vatromet-za-vjencanja' => array( 'Noćni profesionalni vatromet za vjenčanja', 'Večernji profesionalni vatromet za vrhunac vjenčanja ili proslave.' ),
-				'niski-vatromet'       => array( 'Niski vatromet', 'Scenski niski vatromet prilagođen terasama i otvorenim prostorima.' ),
-				'rimske-svijece'       => array( 'Rimske svijeće', 'Svjetlosni efekti rimskih svijeća za proslave na otvorenom.' ),
+				'vatromet-u-boji'      => array( 'Dnevni vatromet u boji', 'Dnevne dimne fontane u boji za ceremonije na otvorenom i fotografisanje.', 500, 1200 ),
+				'vatromet-za-vjencanja' => array( 'Noćni profesionalni vatromet za vjenčanja', 'Večernji profesionalni vatromet za vrhunac vjenčanja ili proslave.', 500, 5000 ),
+				'niski-vatromet'       => array( 'Niski vatromet', 'Scenski niski vatromet prilagođen terasama i otvorenim prostorima.', 300, 500 ),
+				'rimske-svijece'       => array( 'Rimske svijeće', 'Svjetlosni efekti rimskih svijeća za proslave na otvorenom.', 200, 400 ),
 			),
 		),
 		'photo-fun'              => array(
@@ -61,11 +64,11 @@ function dip_seo_categories(): array {
 			'desc'     => 'Najam Photobootha, 360 Video Bootha i Audio Guestbooka, svečana zdravica i profesionalni fotograf za vjenčanja i događaje u Sarajevu i BiH.',
 			'intro'    => 'Photo & Fun atrakcije zabavljaju goste i ostavljaju uspomene koje mladenci i organizatori dobijaju nakon događaja: odštampane fotografije, kratke 360 video snimke, glasovne čestitke i profesionalne fotografije.',
 			'services' => array(
-				'photobooth'              => array( 'Najam Photobootha', 'Klasični foto kutak s pozadinom, rekvizitima i personalizovanim okvirom fotografije.' ),
-				'360-video-booth'         => array( 'Najam 360 Video Bootha', 'Platforma s rotirajućom kamerom koja snima kratke dinamične video snimke gostiju u pokretu.' ),
-				'audio-guestbook'         => array( 'Audio Guestbook (Telefon za glasovne poruke)', 'Retro telefon za snimanje glasovnih poruka i čestitki gostiju.' ),
-				'zdravica'                => array( 'Svečana zdravica (Champagne Tower)', 'Organizacija svečane zdravice uz ulazak mladenaca ili rezanje torte.' ),
-				'profesionalni-fotograf'  => array( 'Profesionalni fotograf (Ajla Husagić)', 'Profesionalno fotografisanje događaja usklađeno s rasvjetom i specijalnim efektima.' ),
+				'photobooth'              => array( 'Najam Photobootha', 'Klasični foto kutak s pozadinom, rekvizitima i personalizovanim okvirom fotografije.', 200, 600 ),
+				'360-video-booth'         => array( 'Najam 360 Video Bootha', 'Platforma s rotirajućom kamerom koja snima kratke dinamične video snimke gostiju u pokretu.', 200, 500 ),
+				'audio-guestbook'         => array( 'Audio Guestbook (Telefon za glasovne poruke)', 'Retro telefon za snimanje glasovnih poruka i čestitki gostiju.', 100, 300 ),
+				'zdravica'                => array( 'Svečana zdravica (Champagne Tower)', 'Organizacija svečane zdravice uz ulazak mladenaca ili rezanje torte.', 200, 500 ),
+				'profesionalni-fotograf'  => array( 'Profesionalni fotograf (Ajla Husagić)', 'Profesionalno fotografisanje događaja usklađeno s rasvjetom i specijalnim efektima.', 450, 2000 ),
 			),
 		),
 		'organizacija-dogadjaja' => array(
@@ -77,21 +80,34 @@ function dip_seo_categories(): array {
 			'desc'     => 'Planiranje prije događaja i koordinacija satnice, sale i izvođača na sam dan vjenčanja ili događaja u Sarajevu i BiH.',
 			'intro'    => 'Organizacija obuhvata planiranje prije događaja, a koordinacija vođenje satnice i izvođača na sam dan događaja – sale, benda ili DJ-a, fotografa i tima za specijalne efekte.',
 			'services' => array(
-				'organizacija-i-koordinacija' => array( 'Organizacija i koordinacija vjenčanja i događaja', 'Planiranje prije događaja i koordinacija satnice i izvođača na sam dan događaja.' ),
+				'organizacija-i-koordinacija' => array( 'Organizacija i koordinacija vjenčanja i događaja', 'Planiranje prije događaja i koordinacija satnice i izvođača na sam dan događaja.', null, 2000 ),
 			),
 		),
 	);
 }
 
-/** Flat list: slug => [name, description, category_slug]. */
+/**
+ * Flat list: slug => [name, description, category_slug, price_low|null, price_high|null, unit|null].
+ */
 function dip_seo_services(): array {
 	$out = array();
 	foreach ( dip_seo_categories() as $cat_slug => $cat ) {
 		foreach ( $cat['services'] as $slug => $svc ) {
-			$out[ $slug ] = array( $svc[0], $svc[1], $cat_slug );
+			$out[ $slug ] = array( $svc[0], $svc[1], $cat_slug, $svc[2] ?? null, $svc[3] ?? null, $svc[4] ?? null );
 		}
 	}
 	return $out;
+}
+
+/**
+ * Re-audit §2: combined legacy slugs → the standalone slug they should become.
+ * (/usluge/vatropad/ and /usluge/lepeza/ already exist as their own pages.)
+ */
+function dip_seo_legacy_slugs(): array {
+	return array(
+		'rotirajuce-prskalice-vatropad' => 'rotirajuce-prskalice',
+		'vatrena-vjetrenjaca-lepeza'    => 'vatrena-vjetrenjaca',
+	);
 }
 
 /** 36 cities listed on the homepage + the country. */
@@ -105,7 +121,10 @@ function dip_seo_cities(): array {
 	);
 }
 
-/** Business facts. Only verified data — street address intentionally omitted until the owner supplies it. */
+/**
+ * Business facts. Only verified data: street address and working hours are not published on
+ * dipstudio.ba yet — fill them in here and they flow into the schema, /kontakt/ block and llms.txt.
+ */
 function dip_seo_business(): array {
 	return array(
 		'name'       => 'DIP Studio',
@@ -117,8 +136,16 @@ function dip_seo_business(): array {
 		'region'     => 'Kanton Sarajevo',
 		'postal'     => '71000',
 		'country'    => 'BA',
-		'street'     => '', // TODO(owner): fill in to complete NAP — see docs/IMPLEMENTATION_STATUS.md.
+		'street'     => '', // TODO(owner): street address (re-audit §5/§7) — see docs/IMPLEMENTATION_STATUS.md.
+		// TODO(owner): working hours, e.g. array( array( 'Mo-Fr', '09:00', '17:00' ) ). Empty = not shown.
+		'hours'      => array(),
+		'wa'         => 'https://wa.me/387603080020',
 		'logo'       => 'https://dipstudio.ba/wp-content/uploads/2026/10/dip-logo-white-optimized.webp',
 		'same_as'    => array( 'https://www.instagram.com/dipstudio.ba/' ),
+		'photographer' => array(
+			'name'    => 'Ajla Husagić',
+			'job'     => 'Profesionalni fotograf',
+			'same_as' => array( 'https://ajla-weddings.vercel.app/' ),
+		),
 	);
 }
