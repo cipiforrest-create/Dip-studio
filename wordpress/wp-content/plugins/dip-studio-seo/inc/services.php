@@ -117,8 +117,16 @@ function dip_seo_business(): array {
 		'region'     => 'Kanton Sarajevo',
 		'postal'     => '71000',
 		'country'    => 'BA',
-		'street'     => '', // TODO(owner): fill in to complete NAP — see docs/IMPLEMENTATION_STATUS.md.
+		'street'     => '',
+		// TODO(owner): working hours, e.g. array( array( 'Mo-Fr', '09:00', '17:00' ) ). Empty = not shown anywhere.
+		'hours'      => array(),
+		'wa'         => 'https://wa.me/387603080020', // TODO(owner): fill in to complete NAP — see docs/IMPLEMENTATION_STATUS.md.
 		'logo'       => 'https://dipstudio.ba/wp-content/uploads/2026/10/dip-logo-white-optimized.webp',
 		'same_as'    => array( 'https://www.instagram.com/dipstudio.ba/' ),
+		'photographer' => array(
+			'name'    => 'Ajla Husagić',
+			'job'     => 'Profesionalni fotograf',
+			'same_as' => array( 'https://ajla-weddings.vercel.app/' ),
+		),
 	);
 }

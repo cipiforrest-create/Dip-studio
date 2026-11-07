@@ -1,4 +1,4 @@
-# DIP Studio — SEO 1.2.0
+# DIP Studio — SEO 1.4.0
 
 One plugin that replaces **DIP Studio — Schema Enrichment 1.0.0** and **DIP Studio – SEO/AEO fixes 1.0.1**.
 
@@ -50,3 +50,24 @@ Deactivate **DIP Studio — SEO** and purge SpeedyCache. Everything goes back to
 New switches under Tools → DIP SEO → "Drugi audit": price_copy, blog_prices, price_badges, home_faq,
 gallery_hide_ai, alt_render, schema_tidy, xml_decl. Prices are read from the "Cjenovnik usluga" table on
 /usluge/ each time that page is generated (option `dip_seo_price_map`), so nothing here is typed by hand.
+
+## 1.4.0 (re-audit, 7 Nov 2026) — merged with "DIP Studio – SEO/AEO fixes 1.1.0"
+
+New switches under Tools → DIP SEO → "Treći audit" (all on by default):
+
+- **price_block:** "Cijena usluge: … X–Y KM" on every service page that has no price section yet. The range comes from the live /usluge/ table, the same source as 1.3.0's price features.
+- **h1_split:** a service-page H1 that also holds the tagline (Photobooth, Hladne prskalice) becomes a short H1 plus a paragraph under it.
+- **link_fix:** links to /projekti/ and to /2026/10/24/… posts point straight at the final URL, and "Cjenovnik usluga" on /usluge/ gets id="cjenovnik".
+- **kontakt_nap:** /kontakt/ gets a contact block with H2 (DIP Studio, 71000 Sarajevo, phone, e-mail, booking steps). Street and hours appear once filled in `inc/services.php`.
+- **review_block:** blog posts get "Stručni pregled sadržaja: DIP Studio Sarajevo" with the published/updated dates.
+- **person_schema:** Person JSON-LD for Ajla Husagić on /usluge/profesionalni-fotograf/.
+
+Other changes:
+
+- **/llms.txt** (switch "llms", still off by default) is now generated: every service with its live KM range, cities, booking steps and contacts. Turn it on if SiteSEO's llms.txt has no prices.
+- **robots.txt:** adds Applebot and Applebot-Extended. The `/stagging/wp-admin/` lines were removed: the live site now runs from the root and /stagging/ is a separate staging install.
+- **Fallbacks:** /paketi/ → /usluge/#cjenovnik and /usluge/360-video-booth/ → /usluge/photobooth/ (302, only while those URLs 404).
+- **Alt tool:** also lists images whose alt is fine but whose Media **title** is still an English prompt, slug or hash, and fixes the title when applied.
+- **WP-CLI:** `wp dip-seo audit-pages` (live per-URL report) and `wp dip-seo cleanup`.
+
+**Staging (/stagging/):** it is a separate WordPress install, so this plugin on the live site can't hide it. Use `server/apache-root.htaccess` from the repo (noindex header) or password-protect the folder (cPanel → Directory Privacy). Then remove `https://dipstudio.ba/stagging/` in Search Console → Removals. Delete the "Hello world!" post in the staging admin.

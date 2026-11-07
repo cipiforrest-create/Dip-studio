@@ -345,10 +345,17 @@ final class DIP_Enrichment_Plugin {
             'alt_render'=>'Popravi engleske, prazne i „Dip Galerija …” alt tekstove u HTML-u stranice',
             'schema_tidy'=>'Schema: jedan Organization @id, BlogPosting bez datuma u @id, „Početna” i „Usluge” u breadcrumbu, raspon cijena',
             'xml_decl'=>'Ukloni zalutali <?xml encoding="utf-8" ?> iz sadržaja stranica',
-            'llms'=>'Vlastiti /llms.txt iz dodatka (isključeno: SiteSEO već pravi llms.txt)',
+            '__reaudit'=>'Treći audit (7. 11. 2026)',
+            'price_block'=>'Blok „Cijena usluge: … X–Y KM” na stranicama usluga koje još nemaju cijenu (iz cjenovnika na /usluge/)',
+            'h1_split'=>'Stranice usluga: predugi H1 (naziv + opis) podijeli na čist H1 i paragraf ispod',
+            'link_fix'=>'Linkovi na /projekti/ i datumske adrese članaka vode direktno na konačnu adresu; id „cjenovnik” na /usluge/',
+            'kontakt_nap'=>'/kontakt/: blok s kontakt podacima (DIP Studio, 71000 Sarajevo, telefon, e-mail) i 3 koraka rezervacije',
+            'review_block'=>'Blog članci: „Stručni pregled sadržaja: DIP Studio Sarajevo” + datum objave i ažuriranja',
+            'person_schema'=>'Person schema za Ajlu Husagić na /usluge/profesionalni-fotograf/',
+            'llms'=>'Vlastiti /llms.txt sa svim uslugama i cijenama iz cjenovnika (zamjenjuje SiteSEO llms.txt)',
         ];
         foreach ($labels as $key=>$label) {
-            if ($key === '__fixes' || $key === '__audit') { echo '<h2>'.esc_html($label).'</h2>'; continue; }
+            if (strpos($key, '__') === 0) { echo '<h2>'.esc_html($label).'</h2>'; continue; }
             echo '<p><label><input type="checkbox" name="dip_enrich_settings['.esc_attr($key).']" value="1" '.checked($this->setting($key), true, false).'> '.esc_html($label).'</label></p>';
         }
         submit_button('Sačuvaj postavke');
@@ -392,6 +399,15 @@ final class DIP_Enrichment_Plugin {
                 $alt = (string)preg_replace('/^dip\s+/i', 'Dip Galerija ', $alt);
             }
             $c = dip_seo_classify_alt($alt);
+            if ($c['type'] === 'ok') {
+                // 1.4.0: alt is fine, but the Media title may still be an English prompt, slug or hash.
+                $title = (string)get_the_title($id);
+                $t = dip_seo_classify_alt($title);
+                if ($title !== '' && in_array($t['type'], ['prompt', 'slug', 'hash'], true) && trim((string)get_post_meta($id, '_wp_attachment_image_alt', true)) !== '') {
+                    $rows[] = ['id'=>(int)$id, 'type'=>'title', 'current'=>'[naslov] '.$title, 'suggestion'=>trim($alt), 'auto'=>true];
+                }
+                continue;
+            }
             if ($c['type'] !== 'prompt' && $c['type'] !== 'slug') { continue; }
             if ($c['type'] === 'prompt' && !$c['suggestion']) {
                 // Match on the English part only (before " — "), in case the stored alt has no Bosnian suffix.
@@ -407,8 +423,8 @@ final class DIP_Enrichment_Plugin {
     private function render_alt_tool(): void {
         $rows = $this->alt_candidates();
         echo '<h2>Alt tekst slika</h2>';
-        if (!$rows) { echo '<p>Nema slika sa engleskim ili slug alt tekstom.</p>'; return; }
-        echo '<p>Slike sa engleskim (AI prompt) ili slug alt tekstom: '.count($rows).'. Označene su predložene zamjene; ostale prepravite ručno u Medijima. Ništa se ne mijenja dok ne kliknete dugme.</p>';
+        if (!$rows) { echo '<p>Nema slika sa engleskim ili slug alt tekstom ni naslovom.</p>'; return; }
+        echo '<p>Slike sa engleskim (AI prompt) ili slug alt tekstom, ili s takvim naslovom u Medijima: '.count($rows).'. Označene su predložene zamjene; ostale prepravite ručno u Medijima. Ništa se ne mijenja dok ne kliknete dugme.</p>';
         echo '<form method="post" action="'.esc_url(admin_url('admin-post.php')).'"><input type="hidden" name="action" value="dip_seo_alt_fix">';
         wp_nonce_field('dip_seo_alt_fix');
         echo '<table class="widefat striped"><thead><tr><th></th><th>Slika</th><th>Sadašnji alt</th><th>Prijedlog</th></tr></thead><tbody>';
@@ -426,11 +442,19 @@ final class DIP_Enrichment_Plugin {
         check_admin_referer('dip_seo_alt_fix');
         $ids = isset($_POST['dip_alt_ids']) && is_array($_POST['dip_alt_ids']) ? array_map('intval', wp_unslash($_POST['dip_alt_ids'])) : [];
         $by_id = [];
-        foreach ($this->alt_candidates() as $r) { if ($r['suggestion'] !== '') { $by_id[$r['id']] = $r['suggestion']; } }
+        foreach ($this->alt_candidates() as $r) { if ($r['suggestion'] !== '') { $by_id[$r['id']] = $r; } }
         $done = 0;
         foreach (array_unique($ids) as $id) {
             if (!isset($by_id[$id])) { continue; }
-            update_post_meta($id, '_wp_attachment_image_alt', $by_id[$id]);
+            $r = $by_id[$id];
+            if ($r['type'] !== 'title') {
+                update_post_meta($id, '_wp_attachment_image_alt', $r['suggestion']);
+            }
+            // 1.4.0: keep the Media title in step when it is an English prompt, slug or hash.
+            $tc = dip_seo_classify_alt((string)get_the_title($id));
+            if ($r['type'] === 'title' || in_array($tc['type'], ['prompt', 'slug', 'hash'], true)) {
+                wp_update_post(['ID'=>$id, 'post_title'=>$r['suggestion']]);
+            }
             ++$done;
         }
         wp_safe_redirect(add_query_arg(['page'=>'dip-seo-enrichment','alt_fixed'=>$done], admin_url('tools.php')));

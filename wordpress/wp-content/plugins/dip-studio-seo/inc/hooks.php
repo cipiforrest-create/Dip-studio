@@ -25,15 +25,12 @@ add_action(
 		if ( ! dip_studio_seo_setting( 'llms' ) || '/llms.txt' !== dip_seo_request_path() ) {
 			return;
 		}
-		$file = DIP_SEO_DIR . '/llms.txt';
-		if ( ! is_readable( $file ) ) {
-			return;
-		}
 		status_header( 200 );
 		header( 'Content-Type: text/markdown; charset=utf-8' );
 		header( 'X-Robots-Tag: noindex' ); // Keep it out of the web index; AI fetchers still read it.
 		header( 'Cache-Control: public, max-age=3600' );
-		readfile( $file ); // phpcs:ignore WordPress.WP.AlternativeFunctions
+		// 1.4.0: generated from inc/services.php + the live /usluge/ price table (no static file).
+		echo dip_seo_llms_txt( home_url( '/' ), dip_seo_price_map() ); // phpcs:ignore WordPress.Security.EscapeOutput -- text/markdown.
 		exit;
 	},
 	0
@@ -56,8 +53,6 @@ add_filter(
 			'User-agent: *',
 			'Disallow: /wp-admin/',
 			'Allow: /wp-admin/admin-ajax.php',
-			'Disallow: /stagging/wp-admin/', // WordPress lives in /stagging/; admin is there.
-			'Allow: /stagging/wp-admin/admin-ajax.php',
 			'Disallow: /?s=',
 			'Disallow: /search/',
 			'',
@@ -80,6 +75,12 @@ add_filter(
 			'Allow: /',
 			'',
 			'User-agent: Google-Extended',
+			'Allow: /',
+			'',
+			'User-agent: Applebot',
+			'Allow: /',
+			'',
+			'User-agent: Applebot-Extended',
 			'Allow: /',
 			'',
 			'Sitemap: ' . home_url( '/sitemaps.xml' ), // SiteSEO's sitemap index.
@@ -110,6 +111,9 @@ function dip_seo_404_fallbacks(): array {
 		'/rasvjeta'               => array( '/usluge/', 302 ),
 		'/vatrometi'              => array( '/usluge/', 302 ),
 		'/photo-fun'              => array( '/usluge/', 302 ),
+		// 1.4.0 (re-audit 7 Nov): also inaccessible. Temporary until the pages are (re)published.
+		'/paketi'                 => array( '/usluge/#cjenovnik', 302 ),
+		'/usluge/360-video-booth' => array( '/usluge/photobooth/', 302 ),
 	);
 	return apply_filters( 'dip_seo_404_fallbacks', $map );
 }
@@ -124,7 +128,7 @@ add_action(
 		if ( dip_studio_seo_setting( 'staging_410' ) && dip_seo_is_staging_path( $path ) ) {
 			status_header( 410 );
 			nocache_headers();
-			header( 'X-Robots-Tag: noindex' );
+			header( 'X-Robots-Tag: noindex, nofollow' );
 			header( 'Content-Type: text/plain; charset=utf-8' );
 			echo '410 Gone';
 			exit;
