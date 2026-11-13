@@ -5,6 +5,10 @@ https://dipstudio.ba/. The site is WordPress, so the fixes ship as a regular **W
 server rules. Content work that needs the owner's real data (prices, specs, address) is listed in
 [`docs/IMPLEMENTATION_STATUS.md`](docs/IMPLEMENTATION_STATUS.md).
 
+> **Status 2026-11-13:** this plugin is **not installed on the live site** — dipstudio.ba runs its own
+> `dip-studio-seo` plugin and a custom theme whose source is not in this repo. Do not activate both.
+> Current analysis and the implementation backlog: [`docs/SEO_AEO_GEO_PLAN.md`](docs/SEO_AEO_GEO_PLAN.md).
+
 ## What's here
 
 | Path | Purpose |
