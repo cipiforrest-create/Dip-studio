@@ -17,6 +17,8 @@ Read sections 0 and 6 before doing anything; sections 1–5 are the evidence beh
   and llms.txt, and a second copy would duplicate them. Treat `wordpress/` here as reference only.
 - Services are a custom post type `dip_service` (`/usluge/<slug>/`). Blog posts are normal posts at `/<slug>/`.
 
+**Status 2026-11-13:** content edits done are logged in `docs/CHANGELOG_SEO.md`; what could not be done over the connection is in `docs/handoff/README.md`.
+
 **How to change the live site:** use the WP Agent connector, `site_id` `992cf213-3bd7-4aa0-b4db-eb6875a35da8`
 (`get_post_content`, `patch_post_content`, `update_post_seo`, `update_post_title`, `create_post`,
 `search_posts`, `list_pages`, `rest_api_read`).
@@ -228,7 +230,7 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
 
 ### Group A — brand, entity, facts (P1)
 
-- [ ] **A1 · Agent · `/kontakt/` title + hours.** Set SEO title to
+- [ ] **A1 · Agent · `/kontakt/` title + hours.** Set SEO title to — *Prepared 2026-11-13: title prepared in docs/handoff/seo-titles.csv; hours still [[OWNER]].*
   `DIP Studio Sarajevo – kontakt, telefon i radno vrijeme` and add a short "Radno vrijeme" block.
   Hours are `[[OWNER: stvarno radno vrijeme za upite]]` — do not publish the block until answered; the title
   change can go now. *Check:* page 200, title length ≤ 60.
@@ -239,7 +241,7 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
 - [ ] **A3 · Agent · one number for cities.** Replace "25+ gradova" with "36 gradova" on the homepage counter and
   anywhere else it appears (`search_posts` for "25+"). If the owner prefers 25+, then instead cut the city list
   and schema to match — ask first: `[[OWNER: 36 ili 25+?]]`. *Check:* `curl -s https://dipstudio.ba/ | grep -c "25+"` → 0.
-- [ ] **A4 · Dev · LocalBusiness schema values** (in `dip-studio-seo`; not editable from this repo). Hand over
+- [ ] **A4 · Dev · LocalBusiness schema values** (in `dip-studio-seo`; not editable from this repo). Hand over — *Prepared 2026-11-13: values in docs/handoff/schema-org.md.*
   `docs/handoff/schema-org.md` containing: `description` (2 sentences with services + area + price range),
   `image` (a real event photo ≥ 1200 px, not the favicon), real `openingHoursSpecification`,
   `sameAs` = Facebook, Instagram, `https://www.tiktok.com/@dipstudio.ba`, `https://udajemse.com/oglas/dip-studio`,
@@ -255,25 +257,25 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
 
 ### Group B — authority and owned surfaces (P1–P2, mostly Owner; Agent prepares the copy)
 
-- [ ] **B1 · Owner · Google Business Profile.** Confirm the profile name is exactly "DIP Studio", primary category
+- [ ] **B1 · Owner · Google Business Profile.** Confirm the profile name is exactly "DIP Studio", primary category — *Prepared 2026-11-13: copy in outreach/gbp-services.md.*
   an event-services category, website link, all 23 services with KM ranges, 20+ photos, real hours. Send the
   review link to past clients; goal **25 Google reviews in 60 days**. Reply to every review.
   Agent prepares: `outreach/gbp-services.md` (service name + 1-line description + price range, from the live
   price table) and `outreach/review-request.md` (WhatsApp message, 3 variants).
-- [ ] **B2 · Owner · directories that already rank.** Create or complete, with identical name/address/phone:
+- [ ] **B2 · Owner · directories that already rank.** Create or complete, with identical name/address/phone: — *Prepared 2026-11-13: copy in outreach/directory-profile.md.*
   festivo.ba vendor page (its vendor pages rank #1 for "foto ogledalo"), setly.eu/ba (ranks #2 for
   "organizacija vjenčanja sarajevo"), recida.ba, udajemse.com (profile exists — complete it; the listing snippet
   currently shows "Zatvoreno!", so fix its hours), santo.ba. Agent prepares `outreach/directory-profile.md`:
   short (300 chars) and long (1,000 chars) descriptions, service list, price range, links.
-- [ ] **B3 · Owner · OLX.ba listings.** OLX appears in the top 10 for nearly every query. Post 5 service listings
+- [ ] **B3 · Owner · OLX.ba listings.** OLX appears in the top 10 for nearly every query. Post 5 service listings — *Prepared 2026-11-13: copy in outreach/olx-listings.md.*
   (niski dim + prskalice, photobooth, 360 booth, zvjezdano nebo, vatromet) with prices and the site URL.
   Agent prepares `outreach/olx-listings.md` (title ≤ 60 chars + body for each).
 - [ ] **B4 · Owner · Facebook/Instagram/TikTok naming.** Facebook pages rank on their page name. Page name or
   subtitle should read "DIP Studio – specijalni efekti za vjenčanja Sarajevo"; bio with phone + site link.
-- [ ] **B5 · Owner · partner links.** Ask for a website link from: ajlaweddings.com (already linked from DIP),
+- [ ] **B5 · Owner · partner links.** Ask for a website link from: ajlaweddings.com (already linked from DIP), — *Prepared 2026-11-13: copy in outreach/partner-link-email.md.*
   venues DIP is tagged with on Instagram (Hotel Hills, Tarčin Forest Resort, Radon Plaza, Orangerie), wedding
   planners it works with. Agent prepares `outreach/partner-link-email.md` (short, Bosnian, two variants).
-- [ ] **B6 · Owner · press.** bonjour.ba (DR 44) and faktor.ba already publish wedding-cost and firework-cost
+- [ ] **B6 · Owner · press.** bonjour.ba (DR 44) and faktor.ba already publish wedding-cost and firework-cost — *Prepared 2026-11-13: copy in outreach/press-pitch.md.*
   articles and rank for them. Pitch the 2026 price data (from C8) as a quoted source. Agent prepares
   `outreach/press-pitch.md`.
 - [ ] **B7 · Owner · community answers.** r/sarajevo and Bosnian wedding Facebook groups rank for
@@ -282,7 +284,7 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
 
 ### Group C — content (Agent; P1 unless marked)
 
-- [ ] **C1 · `/usluge/photobooth/` — synonyms and specs (P1; biggest non-home page, 86 impressions, pos 7.1).**
+- [x] **C1 · `/usluge/photobooth/` — synonyms and specs (P1; biggest non-home page, 86 impressions, pos 7.1).** — *2026-11-13: section + definitions added, /projekti/ link removed; site already says DIP uses a ring-light kiosk, so the title without "foto ogledalo" applies — title in docs/handoff/seo-titles.csv*
   1. Add an H2 section "Photobooth, foto ogledalo ili fotokabina – u čemu je razlika?" (120–180 words) that
      defines the three terms and states which type DIP provides: `[[OWNER: kiosk, foto ogledalo (mirror booth) ili oboje?]]`.
   2. Add a spec table "Tehnički podaci" with rows: dimenzije uređaja, potreban prostor, napajanje, brzina
@@ -291,12 +293,12 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
      (this page currently ranks for "360 video booth sarajevo" instead of the 360 page).
   4. SEO title: `Photobooth i foto ogledalo Sarajevo, 200–600 KM | DIP Studio` (only if the owner confirms a
      mirror booth; otherwise `Photobooth Sarajevo – najam 200–600 KM | DIP Studio`).
-- [ ] **C2 · Price number in every service title (P1).** For each `/usluge/*` title that has "cijena" without a
+- [ ] **C2 · Price number in every service title (P1).** For each `/usluge/*` title that has "cijena" without a — *Prepared 2026-11-13: prepared in docs/handoff/seo-titles.csv — titles are not writable over REST.*
   number, put the range from the live price table in the title, pattern
   `<Usluga> <Sarajevo|za vjenčanja> – <min>–<max> KM | DIP Studio`. Skip the three that already have a number
   (niski dim, ambijentalna rasvjeta, zvjezdano nebo). Do the same in the first 120 characters of the meta
   description. One page per call; log each in the changelog.
-- [ ] **C3 · Niski dim head terms (P1; "niski dim za prvi ples" pos 15.6, "dim za prvi ples" pos 17).**
+- [x] **C3 · Niski dim head terms (P1; "niski dim za prvi ples" pos 15.6, "dim za prvi ples" pos 17).** — *2026-11-13: synonyms added on niski dim + hladne prskalice, "svadbe" on /specijalni-efekti/; blog post already linked correctly*
   Google currently prefers the comparison blog post. Fix the signals:
   1. In `/niski-dim-ili-hladne-prskalice-sta-odabrati-za-prvi-ples/`, make the first mention of niski dim a link
      to `/usluge/niski-dim-za-prvi-ples/` with anchor text "niski dim za prvi ples", and the first mention of
@@ -308,11 +310,11 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
      intro as alternative names.
   4. In the intro paragraph of `/specijalni-efekti/`, `/vjencanja/` and `/usluge/` make sure the phrase
      "specijalni efekti za svadbe" appears once and "svadbe" is used alongside "vjenčanja".
-- [ ] **C4 · "Vatromet za tortu" (P1; 23 impressions across variants, pos 6–12).** On
+- [x] **C4 · "Vatromet za tortu" (P1; 23 impressions across variants, pos 6–12).** On — *2026-11-13: post already opens with the direct answer; title in docs/handoff/seo-titles.csv*
   `/vatromet-za-tortu-ili-prvi-ples-koji-efekat-odabrati/`: SEO title
   `Vatromet za tortu: cijena i kako izgleda | DIP Studio`; first paragraph answers directly — what it is
   (fontane/prskalice uz tortu), price from the live table, indoor safety; link to `/usluge/hladne-prskalice/`.
-- [ ] **C5 · Four city pages as drafts (P2).** Slugs: `specijalni-efekti-mostar`, `specijalni-efekti-tuzla`,
+- [ ] **C5 · Four city pages as drafts (P2).** Slugs: `specijalni-efekti-mostar`, `specijalni-efekti-tuzla`, — *Prepared 2026-11-13: drafts in content/drafts/specijalni-efekti-*.html (Bihać not needed: Banja Luka has a review).*
   `specijalni-efekti-zenica`, `specijalni-efekti-banja-luka` (type: page). Each ≥ 600 words and must contain
   things that are true only for that city, otherwise do not create it:
   - H1 `Specijalni efekti, rasvjeta i Photobooth za vjenčanja u <gradu>`
@@ -323,18 +325,18 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
   - 4 FAQs specific to travel, set-up time, permits for fireworks in that canton/entity
   - links to the 6 main service pages; title `Specijalni efekti za vjenčanja <Grad> | DIP Studio`
   Use both "Banja Luka" and "Banjaluka" on that page. After publishing, link all four from the homepage city list.
-- [ ] **C6 · Three occasion pages as drafts (P2).** `efekti-za-18-rodjendan-i-maturu`,
+- [ ] **C6 · Three occasion pages as drafts (P2).** `efekti-za-18-rodjendan-i-maturu`, — *Prepared 2026-11-13: drafts in content/drafts/.*
   `efekti-za-prosidbu-i-zaruke`, `otvorenje-i-promocija-firme-efekti-photobooth`. Each 500–700 words:
   direct answer + price range in the first paragraph, "šta se najčešće kombinuje" table using real prices,
   3–4 FAQs, links to the relevant services and to `/proslave/` or `/korporativni-dogadjaji/`. Link them from
   those two hub pages after publishing.
-- [ ] **C7 · `/recenzije/` page as draft (P2).** "Iskustva klijenata DIP Studija": group the existing homepage
+- [ ] **C7 · `/recenzije/` page as draft (P2).** "Iskustva klijenata DIP Studija": group the existing homepage — *Prepared 2026-11-13: draft in content/drafts/recenzije.html.*
   testimonials by city and by service, verbatim, plus a link to Google reviews (URL from B1). No review schema.
 - [ ] **C8 · Cost guide as draft (P2).** Post `koliko-kosta-svadba-u-bih-2026`: DIP's own figures for effects,
   lighting, fireworks, photo attractions (from the live table); for sala/muzika/fotograf only cite public
   sources with links (bonjour.ba, recida.ba articles) — do not invent ranges. Include one summary table and a
   "last updated" date. Target the query "koliko košta svadba/vjenčanje u BiH".
-- [ ] **C9 · Orphans and thin posts (P2).**
+- [x] **C9 · Orphans and thin posts (P2).** — *2026-11-13: part 1 done (all orphans linked); part 2 (expanding thin posts) still open*
   1. Add one contextual link to each of these from the most relevant service page's "Vodič" section:
      `/kako-sacuvati-uspomene-gostiju-nakon-vjencanja/` (from audio-guestbook),
      `/vjencanje-na-otvorenom-sta-pripremiti-za-specijalne-efekte/` (from vatromet-za-vjencanja and vatromet-u-boji),
@@ -355,13 +357,13 @@ Priority: P1 = this week, P2 = next 2–3 weeks, P3 = later. "Agent" = implement
 - [ ] **X1 · Dev/Owner · `/stagging/*` → 410.** Apply the rule already in `server/apache-root.htaccess` (top of
   the root `.htaccess`), delete the staging folder, then use GSC → Removals for `dipstudio.ba/stagging/`.
   *Check:* `curl -sI https://dipstudio.ba/stagging/` → `410`.
-- [ ] **X2 · Agent or Dev · `/projekti/`.** Either 301 it to `/galerija/` or set it to noindex and exclude it
+- [ ] **X2 · Agent or Dev · `/projekti/`.** *(2026-11-13: all internal links to it removed; redirect still needed — see docs/handoff/README.md)* Either 301 it to `/galerija/` or set it to noindex and exclude it
   from the SiteSEO sitemap. *Check:* not present in `page-sitemap1.xml`.
 - [ ] **X3 · Agent · 404 helpers.** Create redirects (SiteSEO Pro redirections, or hand to dev):
   `/cjenovnik/` → `/usluge/`, and `/recenzije/` only until C7 is published.
-- [ ] **X4 · Agent · short meta descriptions.** Lengthen to 130–155 on `/faq/`, `/kako-rezervisati/`,
+- [ ] **X4 · Agent · short meta descriptions.** Lengthen to 130–155 on `/faq/`, `/kako-rezervisati/`, — *Prepared 2026-11-13: prepared in docs/handoff/seo-titles.csv.*
   `/proslave/`, `/kako-pripremiti-salu-za-niski-dim-i-prskalice/`; include one price or number in each.
-- [ ] **X5 · Agent · `/rasvjeta/` should rank for "rasvjeta za vjenčanje sarajevo"** (currently `/vjencanja/`
+- [x] **X5 · Agent · `/rasvjeta/` should rank for "rasvjeta za vjenčanje sarajevo"** (currently `/vjencanja/` — *2026-11-13: anchor on /vjencanja/ done; title in docs/handoff/seo-titles.csv*
   does). Title → `Rasvjeta za vjenčanja Sarajevo – 300–5.000 KM | DIP Studio`; on `/vjencanja/` link the first
   mention of "rasvjeta" to `/rasvjeta/` with anchor "rasvjeta za vjenčanja".
 - [ ] **X6 · Dev · caching.** Raise the Cloudflare edge lifetime for HTML (`s-maxage`) from 300 s to at least
